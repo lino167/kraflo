@@ -1,0 +1,18 @@
+# Ambiente Virtual do Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Arquivos de Configuração Local (Segredos)
+.env
+.env.*
+
+# Arquivos temporários e de sistema
+*.swp
+*~
+.DS_Store
+
+# Diretório de PDFs temporários
+temp_pdfs/

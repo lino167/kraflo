@@ -1,6 +1,7 @@
 from telegram.ext import Application
 from config import TELEGRAM_TOKEN, logging
 from handlers.start import get_start_handler
+from handlers.os_handler import get_os_handler
 
 def main() -> None:
     """
@@ -14,6 +15,7 @@ def main() -> None:
     
     # Adiciona os handlers (gestores de comandos/conversas) à aplicação
     application.add_handler(get_start_handler())
+    application.add_handler(get_os_handler())
     # ... aqui iremos adicionar os outros handlers (criar OS, fechar OS, etc.) no futuro
 
     logging.info("Bot iniciado. A aguardar mensagens...")

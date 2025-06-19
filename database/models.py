@@ -1,10 +1,11 @@
 from . import get_db
 from config import logging
 from datetime import datetime
+from typing import Dict, Any, List
 
 # --- Funções de Gestão de Usuários ---
 
-def buscar_usuario_por_id(chat_id: int) -> dict | None:
+def buscar_usuario_por_id(chat_id: int) -> Dict[str, Any] | None:
     """
     Busca um usuário na tabela 'usuarios' pelo seu ID do Telegram.
 
@@ -28,9 +29,7 @@ def verificar_matricula_existente(cadastro_empresa: str) -> bool:
         db = get_db()
         response = db.table('usuarios').select('cadastro_empresa').eq('cadastro_empresa', cadastro_empresa).single().execute()
         return response.data is not None
-    except Exception as e:
-        # Um erro aqui geralmente significa que não encontrou, o que é o esperado.
-        logging.info(f"Verificação de matrícula não encontrou registro (esperado): {e}")
+    except Exception:
         return False
 
 def registrar_usuario(chat_id: int, nome: str, funcao: str, nivel: str, setor: str, cadastro_empresa: str) -> bool:
@@ -42,7 +41,6 @@ def registrar_usuario(chat_id: int, nome: str, funcao: str, nivel: str, setor: s
     """
     try:
         db = get_db()
-        # A API do Supabase levantará um erro em caso de violação de constraint (ex: chat_id duplicado)
         db.table('usuarios').insert({
             'chat_id': chat_id,
             'nome': nome,
@@ -55,4 +53,29 @@ def registrar_usuario(chat_id: int, nome: str, funcao: str, nivel: str, setor: s
         return True
     except Exception as e:
         logging.error(f"Falha ao registrar usuário {chat_id} no banco: {e}")
+        return False
+
+# --- Funções de Gestão de Ordens de Serviço ---
+
+def criar_ordem_servico(chat_id: int, numero_maquina: str, modelo_maquina: str, tipo_manutencao: str, problema_apresentado: str) -> bool:
+    """
+    Cria uma nova ordem de serviço na tabela 'ordens_servico'.
+
+    Returns:
+        True se a OS for criada com sucesso, False caso contrário.
+    """
+    try:
+        db = get_db()
+        db.table('ordens_servico').insert({
+            'chat_id': chat_id,
+            'numero_maquina': numero_maquina,
+            'modelo_maquina': modelo_maquina,
+            'tipo_manutencao': tipo_manutencao,
+            'problema_apresentado': problema_apresentado,
+            'data_abertura': datetime.now().isoformat()
+        }).execute()
+        logging.info(f"Nova OS criada para o chat_id {chat_id} na máquina {numero_maquina}.")
+        return True
+    except Exception as e:
+        logging.error(f"Falha ao criar OS para o chat_id {chat_id}: {e}")
         return False

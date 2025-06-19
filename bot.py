@@ -1,7 +1,7 @@
 from telegram.ext import Application
 from config import TELEGRAM_TOKEN, logging
 from handlers.start import get_start_handler
-from handlers.os_handler import get_os_handler
+from handlers.os_handler import get_criar_os_handler, get_fechar_os_handler 
 
 def main() -> None:
     """
@@ -10,13 +10,13 @@ def main() -> None:
     """
     logging.info("A iniciar a aplicação do bot Kraflo...")
 
-    # Cria a aplicação do bot usando o token
     application = Application.builder().token(TELEGRAM_TOKEN).build()
     
     # Adiciona os handlers (gestores de comandos/conversas) à aplicação
     application.add_handler(get_start_handler())
-    application.add_handler(get_os_handler())
-    # ... aqui iremos adicionar os outros handlers (criar OS, fechar OS, etc.) no futuro
+    application.add_handler(get_criar_os_handler())
+    application.add_handler(get_fechar_os_handler())
+    # ... aqui iremos adicionar o handler de relatório no futuro
 
     logging.info("Bot iniciado. A aguardar mensagens...")
     

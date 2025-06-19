@@ -7,8 +7,8 @@ from typing import List, Dict, Any
 class PDF(FPDF):
     """Classe personalizada para ter cabeçalho e rodapé no PDF."""
     def header(self):
-        self.set_font('Arial', 'B', 12)
-        self.cell(0, 10, 'Relatório de Ordens de Serviço - Kraflo', 0, 1, 'C')
+        self.set_font('Arial', 'B', 14)
+        self.cell(0, 10, 'Relatório de Atividades - Kraflo', 0, 1, 'C')
         self.ln(5)
 
     def footer(self):
@@ -17,72 +17,86 @@ class PDF(FPDF):
         self.cell(0, 10, f'Página {self.page_no()}', 0, 0, 'C')
 
 def formatar_data(data_str: str | None) -> str:
-    """Formata uma data ISO para o formato DD/MM/YYYY HH:MM."""
+    """Formata uma data ISO para o formato DD/MM/YYYY às HH:MM."""
     if not data_str:
-        return "N/A"
+        return "Não preenchido"
     try:
         data_obj = datetime.fromisoformat(data_str)
-        return data_obj.strftime('%d/%m/%Y %H:%M')
+        return data_obj.strftime('%d/%m/%Y às %H:%M')
     except (ValueError, TypeError):
-        return data_str
+        return str(data_str)
 
 def gerar_relatorio_pdf(usuario: Dict[str, Any], ordens: List[Dict[str, Any]], periodo: str) -> str | None:
-    """
-    Gera o ficheiro PDF com os dados fornecidos.
-    """
     try:
         pdf = PDF('P', 'mm', 'A4')
-        pdf.add_page()
+        pdf.set_auto_page_break(auto=True, margin=15)
         
-        # --- Cabeçalho do Relatório ---
-        pdf.set_font('Arial', 'B', 14)
-        pdf.cell(0, 10, 'Detalhes do Profissional', ln=True)
-        pdf.set_font('Arial', '', 10)
-        pdf.cell(0, 6, f"Nome: {usuario.get('nome', 'N/A')}", ln=True)
-        pdf.cell(0, 6, f"Função: {usuario.get('funcao', 'N/A')}", ln=True)
-        pdf.cell(0, 6, f"Matrícula: {usuario.get('cadastro_empresa', 'N/A')}", ln=True)
-        pdf.cell(0, 6, f"Período do Relatório: {periodo}", ln=True)
-        pdf.ln(10)
-
-        # --- Detalhes das Ordens de Serviço ---
-        for os in ordens:
+        # --- Para cada Ordem de Serviço, criamos uma nova página ---
+        for i, ordem in enumerate(ordens):
+            pdf.add_page()
+            
+            # --- Cabeçalho da Página com Detalhes do Profissional ---
             pdf.set_font('Arial', 'B', 12)
-            pdf.cell(0, 8, f"OS ID: {os.get('id')} - Máquina: {os.get('numero_maquina', 'N/A')}", ln=True, border='B')
+            pdf.cell(0, 8, '1. Detalhes do Profissional', ln=True, border='B')
             pdf.ln(4)
-
-            # --- CORREÇÃO DE LAYOUT APLICADA AQUI ---
-            # Para textos longos, calculamos a largura disponível e usamos `multi_cell`.
-            # A largura da página (A4 é 210mm) menos as margens esquerda e direita.
-            largura_disponivel = pdf.w - 2 * pdf.l_margin
-            
-            pdf.set_font('Arial', 'B', 10)
-            pdf.cell(40, 6, "Problema:")
             pdf.set_font('Arial', '', 10)
-            # Garantimos que a célula com o texto longo use a largura restante.
-            pdf.multi_cell(largura_disponivel - 40, 6, f"{os.get('problema_apresentado', 'N/A')}")
-
-            pdf.set_font('Arial', 'B', 10)
-            pdf.cell(40, 6, "Solução:")
-            pdf.set_font('Arial', '', 10)
-            pdf.multi_cell(largura_disponivel - 40, 6, f"{os.get('solucao_aplicada', 'N/A')}")
-            
-            pdf.ln(2)
-            
-            pdf.set_font('Arial', '', 10)
-            pdf.cell(0, 6, f"Abertura: {formatar_data(os.get('data_abertura'))} | Fecho: {formatar_data(os.get('data_fechamento'))}", ln=True)
-            pdf.cell(0, 6, f"Serviço Concluído: {'Sim' if os.get('servico_concluido') else 'Não'}", ln=True)
-            
-            if os.get('substituir_peca'):
-                 pdf.cell(0, 6, f"Peça Substituída: {os.get('descricao_peca', 'N/A')} (TAG: {os.get('tag_peca', 'N/A')})", ln=True)
-            
-            if os.get('observacao'):
-                pdf.set_font('Arial', 'B', 10)
-                pdf.cell(40, 6, "Observações:")
-                pdf.set_font('Arial', '', 10)
-                pdf.multi_cell(largura_disponivel - 40, 6, f"{os.get('observacao')}")
-            
+            pdf.cell(0, 6, f"Nome: {usuario.get('nome', 'N/A')}", ln=True)
+            pdf.cell(0, 6, f"Função: {usuario.get('funcao', 'N/A')}", ln=True)
+            pdf.cell(0, 6, f"Período do Relatório: {periodo}", ln=True)
             pdf.ln(8)
             
+            # --- Detalhes da Ordem de Serviço ---
+            pdf.set_font('Arial', 'B', 12)
+            pdf.cell(0, 8, f"2. Detalhes da OS ID: {ordem.get('id')}", ln=True, border='B')
+            pdf.ln(4)
+            
+            # Formato Label -> Valor
+            pdf.set_font('Arial', 'B', 11)
+            pdf.cell(0, 7, "Máquina", ln=True)
+            pdf.set_font('Arial', '', 11)
+            pdf.cell(0, 7, f"  {ordem.get('numero_maquina', 'N/A')} - {ordem.get('modelo_maquina', 'N/A')}", ln=True)
+
+            pdf.set_font('Arial', 'B', 11)
+            pdf.cell(0, 7, "Tipo de Manutenção", ln=True)
+            pdf.set_font('Arial', '', 11)
+            pdf.cell(0, 7, f"  {ordem.get('tipo_manutencao', 'N/A')}", ln=True)
+
+            pdf.set_font('Arial', 'B', 11)
+            pdf.cell(0, 7, "Problema Apresentado", ln=True)
+            pdf.set_font('Arial', '', 11)
+            pdf.multi_cell(0, 7, f"  {ordem.get('problema_apresentado', 'Não preenchido')}")
+            pdf.ln(1) # CORREÇÃO: Força o cursor para a próxima linha
+
+            pdf.set_font('Arial', 'B', 11)
+            pdf.cell(0, 7, "Solução Aplicada", ln=True)
+            pdf.set_font('Arial', '', 11)
+            pdf.multi_cell(0, 7, f"  {ordem.get('solucao_aplicada', 'Não preenchido')}")
+            pdf.ln(1) # CORREÇÃO: Força o cursor para a próxima linha
+            
+            pdf.set_font('Arial', 'B', 11)
+            pdf.cell(0, 7, "Datas", ln=True)
+            pdf.set_font('Arial', '', 11)
+            pdf.cell(0, 7, f"  Abertura: {formatar_data(ordem.get('data_abertura'))}", ln=True)
+            pdf.cell(0, 7, f"  Fecho: {formatar_data(ordem.get('data_fechamento'))}", ln=True)
+            
+            if ordem.get('substituir_peca'):
+                pdf.set_font('Arial', 'B', 11)
+                pdf.cell(0, 7, "Peças Utilizadas", ln=True)
+                pdf.set_font('Arial', '', 11)
+                pdf.cell(0, 7, f"  Descrição: {ordem.get('descricao_peca', 'N/A')}", ln=True)
+                pdf.cell(0, 7, f"  TAG/Código: {ordem.get('tag_peca', 'N/A')}", ln=True)
+
+            pdf.set_font('Arial', 'B', 11)
+            pdf.cell(0, 7, "Serviço Concluído", ln=True)
+            pdf.set_font('Arial', '', 11)
+            pdf.cell(0, 7, f"  {'Sim' if ordem.get('servico_concluido') else 'Não'}", ln=True)
+
+            if ordem.get('observacao'):
+                pdf.set_font('Arial', 'B', 11)
+                pdf.cell(0, 7, "Observações", ln=True)
+                pdf.set_font('Arial', '', 11)
+                pdf.multi_cell(0, 7, f"  {ordem.get('observacao')}")
+
         # --- Salvar o ficheiro ---
         if not os.path.exists(PDF_SAVE_PATH):
             os.makedirs(PDF_SAVE_PATH)

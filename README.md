@@ -1,51 +1,43 @@
-Kraflo - Assistente de Ordens de Serviço
+# Kraflo - Assistente de Ordens de Serviço
+
 Kraflo é um bot do Telegram para automação e gerenciamento de Ordens de Serviço (OS), projetado para ser robusto, escalável e fácil de usar. A aplicação é construída em Python e utiliza um banco de dados PostgreSQL na nuvem (Supabase) para garantir a integridade e a segurança dos dados.
 
-O objetivo do projeto é fornecer uma ferramenta intuitiva para profissionais de campo (como mecânicos e eletricistas) registrarem suas atividades diárias de forma eficiente, além de permitir a geração de relatórios detalhados para análise e gestão.
+O objetivo do projeto é fornecer uma ferramenta intuitiva para profissionais de campo (como mecânicos e eletricistas) registrarem suas atividades diárias de forma eficiente, além de permitir a geração de relatórios detalhados em PDF para análise e gestão.
 
-🚀 Principais Funcionalidades
-🤖 Interface Conversacional: Interação completa através do Telegram, com menus de botões e um calendário interativo para uma experiência de usuário aprimorada.
+## 🚀 Principais Funcionalidades
 
-👤 Gestão de Usuários: Sistema de cadastro que identifica a função de cada profissional.
+-   **🤖 Interface Conversacional:** Interação completa através do Telegram, com menus de botões persistentes e um calendário interativo para uma experiência de usuário aprimorada.
+-   **👤 Gestão de Usuários:** Sistema de cadastro que identifica a função de cada profissional, com verificação de matrículas duplicadas.
+-   **➕ Criação de OS:** Fluxo de conversa guiado para abrir novas Ordens de Serviço, detalhando o equipamento e o problema encontrado.
+-   **✔️ Fechamento de OS:** Processo completo para finalizar uma OS, registrando a solução aplicada, peças utilizadas e observações.
+-   **📄 Relatórios em PDF:** Geração de relatórios de atividades com formatação profissional, permitindo a seleção de um dia específico ou de um intervalo de datas através de um calendário visual com etapa de confirmação.
 
-➕ Criação de OS: Fluxo guiado para abrir novas Ordens de Serviço, detalhando o equipamento e o problema encontrado.
+## 🛠️ Tecnologias Utilizadas
 
-✔️ Fechamento de OS: Processo completo para finalizar uma OS, registrando a solução aplicada, peças utilizadas e observações.
+-   **Backend:** Python 3.10+
+-   **Framework do Bot:** `python-telegram-bot`
+-   **Banco de Dados:** PostgreSQL (gerenciado via Supabase)
+-   **Interação com Banco de Dados:** `supabase-py`
+-   **Geração de PDF:** `fpdf2`
+-   **Interface Interativa:** `python-telegram-bot-calendar`
+-   **Ambiente:** `venv` (Ambientes Virtuais) e `python-dotenv` (Gestão de Segredos)
+-   **Implantação (Deployment):** Servidor Linux (Oracle Cloud)
+-   **Gerenciamento de Processos:** `systemd`
 
-📄 Relatórios em PDF: Geração de relatórios de atividades por dia, mês ou intervalo de datas personalizado.
+## ⚙️ Instalação e Configuração
 
-🛠️ Tecnologias Utilizadas
-Backend: Python 3.10+
-
-Framework do Bot: python-telegram-bot
-
-Banco de Dados: PostgreSQL (gerenciado via Supabase)
-
-Interação com Banco de Dados: supabase-py
-
-Geração de PDF: fpdf2
-
-Interface Interativa: python-telegram-bot-calendar
-
-Ambiente: venv (Ambientes Virtuais) e python-dotenv (Gestão de Segredos)
-
-Implantação (Deployment): Servidor Linux (Oracle Cloud)
-
-Gerenciamento de Processos: systemd
-
-⚙️ Instalação e Configuração
 Siga os passos abaixo para configurar e executar o projeto em um ambiente de desenvolvimento ou produção.
 
-Pré-requisitos
-Python 3.10 ou superior
+### Pré-requisitos
 
-Git
+-   Python 3.10 ou superior
+-   Git
+-   Uma conta no [Supabase](https://supabase.com)
+-   Um token de bot do Telegram (obtido via [@BotFather](https://t.me/BotFather))
 
-Uma conta no Supabase
+### 1. Clonar o Repositório
 
-Um token de bot do Telegram (obtido via @BotFather)
-
-1. Clonar o Repositório
+```sh
 git clone [https://github.com/lino167/kraflo.git](https://github.com/lino167/kraflo.git)
 cd kraflo
 
@@ -63,8 +55,6 @@ source venv/bin/activate
 
 # Instalar as bibliotecas necessárias
 pip install -r requirements.txt
-
-(O arquivo requirements.txt será criado em uma etapa futura do nosso desenvolvimento)
 
 3. Configurar o Banco de Dados (Supabase)
 Acesse seu painel do Supabase, vá para o SQL Editor do seu projeto e execute o script abaixo para criar as tabelas.
@@ -127,6 +117,4 @@ Execute o bot diretamente no seu terminal (com o ambiente virtual ativado).
 python bot.py
 
 Para Produção:
-O projeto é implantado em um servidor Linux e gerenciado pelo systemd para garantir a execução contínua (24/7). Consulte a documentação interna do projeto ou os commits relacionados à implantação para mais detalhes.
-
-Este repositório documenta o desenvolvimento completo da aplicação, desde a concepção até a implantação.
+O projeto é implantado em um servidor Linux e gerenciado pelo systemd para garantir a execução contínua (24/7). Para mais detalhes sobre o processo de implantação, consulte o commit relacionado à configuração do serviço systemd.

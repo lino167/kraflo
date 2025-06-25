@@ -6,9 +6,6 @@ from typing import Dict, Any, List
 # --- Funções de Gestão de Usuários ---
 
 def buscar_usuario_por_id(chat_id: int) -> Dict[str, Any] | None:
-    """
-    Busca um usuário na tabela 'usuarios' pelo seu ID do Telegram.
-    """
     try:
         db = get_db()
         response = db.table('usuarios').select('*').eq('chat_id', chat_id).single().execute()
@@ -18,9 +15,6 @@ def buscar_usuario_por_id(chat_id: int) -> Dict[str, Any] | None:
         return None
 
 def verificar_matricula_existente(cadastro_empresa: str) -> bool:
-    """
-    Verifica se um cadastro de empresa (matrícula) já existe no banco.
-    """
     try:
         db = get_db()
         response = db.table('usuarios').select('cadastro_empresa').eq('cadastro_empresa', cadastro_empresa).single().execute()
@@ -29,18 +23,11 @@ def verificar_matricula_existente(cadastro_empresa: str) -> bool:
         return False
 
 def registrar_usuario(chat_id: int, nome: str, funcao: str, nivel: str, setor: str, cadastro_empresa: str) -> bool:
-    """
-    Registra um novo usuário na tabela 'usuarios'.
-    """
     try:
         db = get_db()
         db.table('usuarios').insert({
-            'chat_id': chat_id, 
-            'nome': nome, 
-            'funcao': funcao, 
-            'nivel': nivel, 
-            'setor': setor, 
-            'cadastro_empresa': cadastro_empresa
+            'chat_id': chat_id, 'nome': nome, 'funcao': funcao, 
+            'nivel': nivel, 'setor': setor, 'cadastro_empresa': cadastro_empresa
         }).execute()
         logging.info(f"Usuário {nome} (chat_id: {chat_id}) registrado com sucesso.")
         return True
@@ -50,14 +37,17 @@ def registrar_usuario(chat_id: int, nome: str, funcao: str, nivel: str, setor: s
 
 # --- Funções de Gestão de Ordens de Serviço ---
 
-def criar_ordem_servico(chat_id: int, **dados_os) -> bool:
+def criar_ordem_servico(chat_id: int, dados_os: Dict[str, Any]) -> bool:
     """
     Cria uma nova ordem de serviço na tabela 'ordens_servico'.
+    Agora espera um dicionário com os dados da OS.
     """
     try:
         db = get_db()
+        # Adiciona o chat_id e a data ao dicionário antes de inserir
         dados_os['chat_id'] = chat_id
         dados_os['data_abertura'] = datetime.now().isoformat()
+        
         db.table('ordens_servico').insert(dados_os).execute()
         logging.info(f"Nova OS criada para o chat_id {chat_id}.")
         return True

@@ -1,3 +1,8 @@
+# kraflo/handlers/os_handler.py
+"""
+Este handler gere os fluxos de criação e fecho de Ordens de Serviço (OS),
+agora com passos de confirmação e validação de entrada de dados.
+"""
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     ConversationHandler, CommandHandler, MessageHandler, 
@@ -42,8 +47,8 @@ async def confirmar_acao(update: Update, context: CallbackContext):
 
 async def cancelar(update: Update, context: CallbackContext):
     """Função genérica para cancelar e limpar qualquer conversa."""
+    # Precisamos de tratar o cancelamento vindo de um botão (query) ou de uma mensagem
     if update.callback_query:
-        # Se a origem for um botão, não podemos usar reply_text
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             text="Operação cancelada.",
@@ -56,7 +61,7 @@ async def cancelar(update: Update, context: CallbackContext):
     return ConversationHandler.END
 
 
-# <<< --- FLUXO DE CRIAÇÃO DE OS --- >>>
+# <<< --- FLUXO DE CRIAÇÃO DE OS (ATUALIZADO) --- >>>
 
 async def criar_os_iniciar(update: Update, context: CallbackContext):
     """Ponto de entrada para criar OS. Pede confirmação."""
@@ -76,7 +81,7 @@ async def receber_numero_maquina(update: Update, context: CallbackContext):
     numero_maquina_texto = update.message.text
     if not numero_maquina_texto.isdigit():
         await update.message.reply_text("❌ Entrada inválida. Por favor, insira apenas números para a máquina.")
-        return NUMERO_MAQUINA 
+        return NUMERO_MAQUINA # Mantém-se no mesmo passo, a pedir novamente.
     
     context.user_data['numero_maquina'] = int(numero_maquina_texto)
     await update.message.reply_text("Ok. E qual é o modelo da máquina?")
@@ -96,8 +101,22 @@ async def receber_tipo_manutencao(update: Update, context: CallbackContext):
     return PROBLEMA_APRESENTADO
 
 async def receber_problema_apresentado(update: Update, context: CallbackContext):
+    """Prepara os dados e salva a OS no banco."""
     context.user_data['problema_apresentado'] = update.message.text
-    sucesso = criar_ordem_servico(chat_id=update.effective_chat.id, **context.user_data)
+    
+    # Prepara um dicionário apenas com os campos que pertencem à tabela ordens_servico
+    dados_para_criar_os = {
+        'numero_maquina': context.user_data.get('numero_maquina'),
+        'modelo_maquina': context.user_data.get('modelo_maquina'),
+        'tipo_manutencao': context.user_data.get('tipo_manutencao'),
+        'problema_apresentado': context.user_data.get('problema_apresentado')
+    }
+
+    sucesso = criar_ordem_servico(
+        chat_id=update.effective_chat.id,
+        dados_os=dados_para_criar_os
+    )
+
     if sucesso:
         await update.message.reply_text("✅ OS criada com sucesso!", reply_markup=get_main_keyboard())
     else:
@@ -105,7 +124,7 @@ async def receber_problema_apresentado(update: Update, context: CallbackContext)
     return await cancelar(update, context)
 
 
-# <<< --- FLUXO DE FECHO DE OS --- >>>
+# <<< --- FLUXO DE FECHO DE OS (ATUALIZADO) --- >>>
 
 async def fechar_os_iniciar(update: Update, context: CallbackContext):
     """Ponto de entrada para fechar OS. Pede confirmação."""
@@ -128,6 +147,7 @@ async def listar_os_para_fechar(update: Update, context: CallbackContext):
     await context.bot.send_message(chat_id, "Selecione a Ordem de Serviço que deseja fechar:", reply_markup=InlineKeyboardMarkup(keyboard))
     return SELECIONAR_OS
 
+# (O resto das funções de fecho não precisam de alteração, mas estão aqui para completude)
 async def selecionar_os(update: Update, context: CallbackContext):
     query = update.callback_query
     await query.answer()
@@ -211,7 +231,7 @@ async def finalizar_fechamento_os(update: Update, context: CallbackContext):
     return await cancelar(update, context)
 
 
-# --- FUNÇÕES QUE RETORNAM OS HANDLERS ---
+# --- FUNÇÕES QUE RETORNAM OS HANDLERS (ATUALIZADAS) ---
 
 def get_criar_os_handler() -> ConversationHandler:
     return ConversationHandler(
@@ -242,4 +262,3 @@ def get_fechar_os_handler() -> ConversationHandler:
         },
         fallbacks=[CommandHandler("cancelar", cancelar)], per_message=False
     )
-
